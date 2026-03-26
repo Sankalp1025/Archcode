@@ -2,7 +2,11 @@ import * as dotenv from "dotenv";
 dotenv.config();
 console.log("DB:", process.env.DATABASE_URL);
 
-import app from "./app";
+import express from "express";
+
+const app = express();
+
+app.use(express.json());   // Middleware to parse JSON bodies
 
 const PORT = 5000;
 
