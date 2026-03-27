@@ -33,9 +33,21 @@ export const createProblem = async (
   res.status(201).json(problem);
 };
 
-export const getAllProblems = async (_req: Request, res: Response) => {
-  const problems = await problemService.getAllProblemsService();
-  res.json(problems);
+export const getAllProblems = async (req: Request, res: Response) => {
+  try {
+    const { page = "1", limit = "10", difficulty, tag } = req.query;
+
+    const result = await problemService.getAllProblemsService({
+      page: Number(page),
+      limit: Number(limit),
+      difficulty: difficulty as string,
+      tag: tag as string,
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching problems" });
+  }
 };
 
 export const getProblemById = async (

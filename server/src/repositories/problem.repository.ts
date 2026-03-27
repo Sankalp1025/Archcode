@@ -12,8 +12,20 @@ export const createProblem = async (data: {
   });
 };
 
-export const getAllProblems = async () => {
-  return prisma.problem.findMany();
+export const getAllProblems = async ({
+  skip,
+  take,
+  where,
+}: {
+  skip: number;
+  take: number;
+  where: any;
+}) => {
+  return prisma.problem.findMany({
+    where,
+    skip,
+    take,
+  });
 };
 
 export const getProblemById = async (id: string) => {
