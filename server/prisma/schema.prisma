@@ -13,21 +13,27 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  name          String
-  email         String   @unique
-  password      String
-  createdAt     DateTime @default(now())
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+
+  // Auth system upgrade
+  refreshToken String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Progress Tracking
+  solvedCount  Int      @default(0)
+  streak       Int      @default(0)
+  lastSolvedAt DateTime?
 
-  solvedCount   Int      @default(0)
-  streak        Int      @default(0)
-  lastSolvedAt  DateTime?
-
-  submissions   Submission[]
-  discussions   Discussion[]
+  // Relations
+  submissions Submission[]
+  discussions Discussion[]
 }
+
 
 model Problem {
   id          String   @id @default(uuid())

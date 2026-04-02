@@ -1,4 +1,4 @@
-import * as dotenv from "dotenv";
+import dotenv from "dotenv";
 dotenv.config();
 console.log("DB:", process.env.DATABASE_URL);
 
@@ -24,3 +24,7 @@ app.use("/api/problems", problemRoutes);
 import airoutes from "./routes/ai.routes";
 
 app.use("/api/ai", airoutes);
+
+import authRoutes from "./modules/auth/auth.routes";
+app.use("/api/auth", authRoutes);
+
