@@ -28,3 +28,4 @@ app.use("/api/ai", airoutes);
 import authRoutes from "./modules/auth/auth.routes";
 app.use("/api/auth", authRoutes);
 
+import "./queues/design.worker";

@@ -8,7 +8,7 @@ const openai = new OpenAI({
 export const evaluateDesign = async (userAnswer: string) => {
   try {
 
-    // TRY REAL AI FIRST - if it fails (e.g. no API key, OpenAI down), we catch the error and return a mock response
+    // TRY REAL AI FIRST - if it fails (e.g. no API key, OpenAI down), catch the error and return a mock response
     const prompt = buildEvaluationPrompt(userAnswer);
 
     const response = await openai.chat.completions.create({
@@ -58,4 +58,21 @@ export const evaluateDesign = async (userAnswer: string) => {
       ]
     };
   }
+};
+
+export const analyzeDesign = async (
+  problemId: string,
+  userDesign: string
+) => {
+
+  return {
+    score: 8,
+    feedback: {
+      strengths: ["Good use of caching"],
+      weaknesses: ["No rate limiting"],
+      missingComponents: ["Load balancer"],
+      scalabilityIssues: ["Single DB instance"],
+      suggestions: ["Use sharding"],
+    },
+  };
 };

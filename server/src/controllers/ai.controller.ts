@@ -17,3 +17,19 @@ export const evaluateController = async (req: Request, res: Response) => {
   res.status(500).json({ error: error });
 }
 };
+
+import { designQueue } from "../queues/design.queue";
+
+export const submitDesign = async (req: Request, res: Response) => {
+  const { problemId, userDesign } = req.body;
+
+  const job = await designQueue.add("analyze", {
+    problemId,
+    userDesign,
+  });
+
+  res.json({
+    message: "Design submitted",
+    jobId: job.id,
+  });
+};
