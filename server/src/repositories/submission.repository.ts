@@ -14,6 +14,10 @@ type SubmissionData = {
   problemId: string;
 };
 
-export const create = async (data: SubmissionData) => {
+export const create = async (data: any) => {
   return prisma.submission.create({ data });
+};
+
+export const getById = async (id: string) => {
+  return prisma.submission.findUnique({ where: { id } });
 };

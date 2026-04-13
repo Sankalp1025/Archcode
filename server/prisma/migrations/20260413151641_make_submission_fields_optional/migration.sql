@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Submission" ALTER COLUMN "aiFeedback" DROP NOT NULL,
+ALTER COLUMN "clarityScore" DROP NOT NULL,
+ALTER COLUMN "consistencyScore" DROP NOT NULL,
+ALTER COLUMN "scalabilityScore" DROP NOT NULL,
+ALTER COLUMN "score" DROP NOT NULL;

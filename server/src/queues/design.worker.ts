@@ -1,23 +1,52 @@
 import { Worker } from "bullmq";
-import IORedis from "ioredis";
-import { analyzeDesign } from "../services/ai.service";
-
-const connection = new IORedis({
-  host: "127.0.0.1",
-  port: 6379,
-    maxRetriesPerRequest: null,
-});
+import { redisConnection } from "../config/redis";
+import { prisma } from "../config/db";
+import { evaluationPipeline } from "../pipelines/evaluation.pipeline";
+import { SubmissionStatus } from "@prisma/client";
 
 export const designWorker = new Worker(
-  "design-analysis",
+  "submission-queue",
   async (job) => {
-    const { problemId, userDesign } = job.data;
+    
+    console.log("Worker received job:",job.data);
 
-    console.log("Processing job:", job.id);
+    const { submissionId, answer } = job.data;
 
-    const result = await analyzeDesign(problemId, userDesign);
+    try {
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: { status: SubmissionStatus.PROCESSING },
+      });
 
-    console.log("Analysis done:", result);
+
+      const evaluationResult = await evaluationPipeline.run(answer);
+
+      const {score,feedback,} = evaluationResult;
+
+      
+
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: {
+          status: SubmissionStatus.COMPLETED,
+          result: evaluationResult,
+          score: Number(score) || 0,
+          aiFeedback: feedback,
+        },
+      });
+
+    } catch (error: any) {
+  
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: {
+          status: SubmissionStatus.FAILED,
+          error: error.message,
+        },
+      });
+    }
   },
-  { connection }
+  {
+    connection: redisConnection,
+  }
 );

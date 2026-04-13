@@ -53,22 +53,22 @@ model Problem {
 model Submission {
   id          String   @id @default(uuid())
 
-  // Versioning
-
-  version     Int
-
-  answer      String
-  status      SubmissionStatus
-
-  // AI Breakdown
+  answer      String   @db.Text
+  status      SubmissionStatus @default(PENDING)
+  result Json?
+  error  String?
   
-  score               Int
-  scalabilityScore    Int
-  consistencyScore    Int
-  clarityScore        Int
-  aiFeedback          String
+  score               Int?
+  scalabilityScore    Int?
+  consistencyScore    Int?
+  clarityScore        Int?
+  aiFeedback          String?
+
+  executionTime Int?
+  memoryUsage   Int?
 
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   userId      String
   problemId   String
@@ -77,6 +77,13 @@ model Submission {
   problem     Problem @relation(fields: [problemId], references: [id])
 
   @@index([userId, problemId])
+}
+
+enum SubmissionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 model Tag {
@@ -133,13 +140,6 @@ enum Difficulty {
   EASY
   MEDIUM
   HARD
-}
-
-enum SubmissionStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-  IMPROVING
 }
 
 

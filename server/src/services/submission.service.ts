@@ -1,43 +1,40 @@
 import { PrismaClient, SubmissionStatus } from "@prisma/client";
+import { submissionQueue } from "../queues/submission.queue";
 
 const prisma = new PrismaClient();
 
 export const handleSubmission = async (data: any) => {
-  const { userId, problemId, answer } = data;
+  try {
+    console.log("Incoming submission:", data);
 
-  // Get latest version
-  const lastSubmission = await prisma.submission.findFirst({
-    where: { userId, problemId },
-    orderBy: { version: "desc" },
-  });
+    const submission = await prisma.submission.create({
+      data: {
+        answer: data.answer,
+        status: SubmissionStatus.PENDING,
+        userId: "temp-user",        
+        problemId: "temp-problem",  
+      },
+    });
 
-  const newVersion = lastSubmission ? lastSubmission.version + 1 : 1;
+    console.log("Created:", submission.id);
 
-  // Fake AI evaluation (will replace with real AI later)
- const aiResult = {
-  score: Math.floor(Math.random() * 100),
-  scalabilityScore: Math.floor(Math.random() * 100),
-  consistencyScore: Math.floor(Math.random() * 100),
-  clarityScore: Math.floor(Math.random() * 100),
-  feedback: "Good design, but can improve scalability",
-  status: SubmissionStatus.IMPROVING,
+    await submissionQueue.add("evaluate", {
+      submissionId: submission.id,
+      answer: data.answer,
+    });
+
+    console.log("Job added to queue");
+
+    return submission;
+
+  } catch (error) {
+    console.error("SERVICE ERROR:", error);
+    throw error;
+  }
 };
 
-  // Save to DB
-  const submission = await prisma.submission.create({
-    data: {
-      userId,
-      problemId,
-      answer,
-      version: newVersion,
-      status: aiResult.status,
-      score: aiResult.score,
-      scalabilityScore: aiResult.scalabilityScore,
-      consistencyScore: aiResult.consistencyScore,
-      clarityScore: aiResult.clarityScore,
-      aiFeedback: aiResult.feedback,
-    },
+export const getSubmissionById = async (id: string) => {
+  return await prisma.submission.findUnique({
+    where: { id },
   });
-
-  return submission;
 };
