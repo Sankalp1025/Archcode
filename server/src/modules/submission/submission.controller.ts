@@ -10,8 +10,8 @@ export const createSubmission = async (req: Request, res: Response) => {
     
     console.log("Incoming submission:", req.body);
 
-    if (!req.body || !req.body.answer) {
-      return res.status(400).json({ error: "Answer is required" });
+    if (!req.body || !req.body.code) {
+      return res.status(400).json({ error: "Code is required" });
     }
 
     const result = await submissionService.handleSubmission(req.body);

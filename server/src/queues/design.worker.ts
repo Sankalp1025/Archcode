@@ -7,46 +7,47 @@ import { SubmissionStatus } from "@prisma/client";
 export const designWorker = new Worker(
   "submission-queue",
   async (job) => {
-    
-    console.log("Worker received job:",job.data);
-
-    const { submissionId, answer } = job.data;
+    const { submissionId } = job.data;
 
     try {
-      await prisma.submission.update({
-        where: { id: submissionId },
-        data: { status: SubmissionStatus.PROCESSING },
+      const submission = await prisma.submission.findUnique({
+        where: { id: submissionId }
       });
 
+      if (!submission) {
+        throw new Error("Submission not found");
+      }
 
-      const evaluationResult = await evaluationPipeline.run(answer);
+      if (!submission.code) {
+        throw new Error("Code missing");
+      }
 
-      const {score,feedback,} = evaluationResult;
+      await prisma.submission.update({
+        where: { id: submissionId },
+        data: { status: SubmissionStatus.PROCESSING }
+      });
 
-      
+      const result = await evaluationPipeline.run(submission.code);
 
       await prisma.submission.update({
         where: { id: submissionId },
         data: {
           status: SubmissionStatus.COMPLETED,
-          result: evaluationResult,
-          score: Number(score) || 0,
-          aiFeedback: feedback,
-        },
+          result: result
+        }
       });
 
     } catch (error: any) {
-  
       await prisma.submission.update({
         where: { id: submissionId },
         data: {
           status: SubmissionStatus.FAILED,
-          error: error.message,
-        },
+          error: error.message
+        }
       });
     }
   },
   {
-    connection: redisConnection,
+    connection: redisConnection
   }
 );

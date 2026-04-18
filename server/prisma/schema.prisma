@@ -52,31 +52,33 @@ model Problem {
 
 model Submission {
   id          String   @id @default(uuid())
-
-  answer      String   @db.Text
+  code        String   @db.Text
+  language    String
   status      SubmissionStatus @default(PENDING)
-  result Json?
-  error  String?
-  
-  score               Int?
-  scalabilityScore    Int?
-  consistencyScore    Int?
-  clarityScore        Int?
-  aiFeedback          String?
+
+  result      Json?
+  error       String?
+
+  score              Int?
+  scalabilityScore   Int?
+  consistencyScore   Int?
+  clarityScore       Int?
+  aiFeedback         String?
 
   executionTime Int?
   memoryUsage   Int?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  userId      String
-  problemId   String
+  userId    String
+  problemId String
 
-  user        User    @relation(fields: [userId], references: [id])
-  problem     Problem @relation(fields: [problemId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  problem Problem @relation(fields: [problemId], references: [id])
 
   @@index([userId, problemId])
+  @@index([status])
 }
 
 enum SubmissionStatus {

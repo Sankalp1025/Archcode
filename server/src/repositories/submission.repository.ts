@@ -2,7 +2,7 @@ import prisma from "../config/prisma";
 import { SubmissionStatus } from "@prisma/client";
 
 type SubmissionData = {
-  answer: string;
+  code: string;
   version: number;
   status: SubmissionStatus;
   score: number;
@@ -15,7 +15,14 @@ type SubmissionData = {
 };
 
 export const create = async (data: any) => {
-  return prisma.submission.create({ data });
+  return prisma.submission.create({ data: {
+    code: data.code,
+    language: data.language,
+    status: "PENDING",
+    userId: data.userId,
+    problemId: data.problemId 
+  }
+});
 };
 
 export const getById = async (id: string) => {

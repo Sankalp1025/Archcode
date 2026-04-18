@@ -5,20 +5,23 @@ import { submissionQueue } from "../../queues/submission.queue";
 import prisma from "../../config/prisma";
 
 type SubmissionInput = {
-  answer: string;
+  code: string;
+  language: string;
+  userId: string;
+  problemId: string;
 };
 
 export const handleSubmission = async (data: SubmissionInput) => {
   const submission = await submissionRepo.create({
-    answer: data.answer,
+    code: data.code,
+    language: data.language,
     status: SubmissionStatus.PENDING,
-    userId: "temp-user",
-    problemId: "temp-problem",
+    userId: data.userId,
+    problemId: data.problemId,
   });
 
-  await submissionQueue.add("evaluate", {
-    submissionId: submission.id,
-    answer: data.answer
+  await submissionQueue.add("submission", {
+    submissionId: submission.id
   });
 
   return submission;
