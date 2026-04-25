@@ -7,6 +7,22 @@ const connection = new IORedis({
   maxRetriesPerRequest: null,
 });
 
-export const designQueue = new Queue("design-analysis", {
+export const designQueue = new Queue("submission-queue", {
   connection,
 });
+
+export const addSubmissionJob = async (submissionId: string) => {
+  await designQueue.add(
+    "evaluate-submission",
+    { submissionId },
+    {
+      attempts: 3, 
+      backoff: {
+        type: "exponential",
+        delay: 2000,
+      },
+      removeOnComplete: true,
+      removeOnFail: false,
+    }
+  );
+};

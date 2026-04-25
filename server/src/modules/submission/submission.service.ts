@@ -1,30 +1,30 @@
 import * as submissionRepo from "../../repositories/submission.repository";
-import { evaluationPipeline } from "../../pipelines/evaluation.pipeline";
-import { SubmissionStatus } from "@prisma/client";
 import { submissionQueue } from "../../queues/submission.queue";
-import prisma from "../../config/prisma";
+import  prisma  from "../../config/prisma";
 
 type SubmissionInput = {
-  code: string;
-  language: string;
-  userId: string;
-  problemId: string;
+  answer: string;
+  language?: string;
 };
 
 export const handleSubmission = async (data: SubmissionInput) => {
-  const submission = await submissionRepo.create({
-    code: data.code,
-    language: data.language,
-    status: SubmissionStatus.PENDING,
-    userId: data.userId,
-    problemId: data.problemId,
-  });
+  try {
+    console.log("SERVICE DATA:", data);
 
-  await submissionQueue.add("submission", {
-    submissionId: submission.id
-  });
+    const submission = await submissionRepo.create(data);
 
-  return submission;
+    await submissionQueue.add("submission", {
+      submissionId: submission.id,
+    });
+
+    return {
+      submissionId: submission.id,
+      status: submission.status,
+    };
+  } catch (error) {
+    console.error("SERVICE ERROR:", error);
+    throw error;
+  }
 };
 
 export const getSubmissionById = async (id: string) => {

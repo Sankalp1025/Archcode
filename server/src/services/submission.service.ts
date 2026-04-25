@@ -1,5 +1,5 @@
 import { PrismaClient, SubmissionStatus } from "@prisma/client";
-import { submissionQueue } from "../queues/submission.queue";
+import { addSubmissionJob } from "../queues/design.queue";
 
 const prisma = new PrismaClient();
 
@@ -9,23 +9,24 @@ export const handleSubmission = async (data: any) => {
 
     const submission = await prisma.submission.create({
       data: {
-        answer: data.answer,
+        code: data.answer,
+        language: data.language || "text",
         status: SubmissionStatus.PENDING,
-        userId: "temp-user",        
-        problemId: "temp-problem",  
+        userId: "temp-user",
+        problemId: "temp-problem",
       },
     });
 
     console.log("Created:", submission.id);
 
-    await submissionQueue.add("evaluate", {
-      submissionId: submission.id,
-      answer: data.answer,
-    });
+    await addSubmissionJob(submission.id);
 
     console.log("Job added to queue");
 
-    return submission;
+    return {
+      submissionId: submission.id,
+      status: submission.status,
+    };
 
   } catch (error) {
     console.error("SERVICE ERROR:", error);
